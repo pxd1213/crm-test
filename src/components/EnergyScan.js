@@ -61,8 +61,7 @@ const EnergyScan = () => {
               <Button
                 variant="contained"
                 component="span"
-                startIcon={file ? <UploadIcon /> : <UploadIcon />}
-                disabled={loading}
+                startIcon={<UploadIcon />}
               >
                 {file ? file.name : 'Choose PDF File'}
               </Button>
@@ -75,12 +74,6 @@ const EnergyScan = () => {
           </Box>
         </CardContent>
       </Card>
-
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Box>
-      )}
 
       {parsedData && (
         <>

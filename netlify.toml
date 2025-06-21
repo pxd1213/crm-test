@@ -1,3 +1,12 @@
 [build]
   command = "npm run build"
   publish = "build"
+
+[build.environment]
+  REACT_APP_FIREBASE_API_KEY = "AIzaSyBp6I9tXDZo7lA-48_YsuqzapC0RI9n4pY"
+  REACT_APP_FIREBASE_AUTH_DOMAIN = "crm-test-83051.firebaseapp.com"
+  REACT_APP_FIREBASE_PROJECT_ID = "crm-test-83051"
+  REACT_APP_FIREBASE_STORAGE_BUCKET = "crm-test-83051.firebasestorage.app"
+  REACT_APP_FIREBASE_MESSAGING_SENDER_ID = "421568700889"
+  REACT_APP_FIREBASE_APP_ID = "1:421568700889:web:4604e2963eae01f72cb9c8"
+  REACT_APP_FIREBASE_MEASUREMENT_ID = "G-VP0W228FLH"

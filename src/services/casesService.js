@@ -149,18 +149,7 @@ export class CasesService {
         description: `Status: ${caseData.status}`,
         channel: caseData.channel,
         time: new Date(caseData.createdAt).toLocaleString()
-      }))
-      .map(activity => ({
-        type: activity.channel,
-        icon: this.getChannelIcon(activity.channel),
-        title: this.getActivityTitle(activity),
-        description: activity.description || activity.subject,
-        time: this.getTimeAgo(activity.createdAt),
       }));
-    } catch (error) {
-      console.error('Error fetching recent activity:', error);
-      throw error;
-    }
   }
 
   getChannelIcon(channel) {

@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { ParsedData } from '../../components/EnergyLinkUploader';
 import formidable from 'formidable';
 import { IncomingMessage, ServerResponse } from 'http';
+import { Buffer } from 'buffer';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

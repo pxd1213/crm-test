@@ -20,7 +20,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Download as DownloadIcon, Upload as UploadIcon } from '@mui/icons-material';
-import { mockEnergyScanData } from '../mock/energyScan';
+import { mockEnergyScanData } from './mock/energyScan';
 
 const EnergyScan = () => {
   const [file, setFile] = useState(null);

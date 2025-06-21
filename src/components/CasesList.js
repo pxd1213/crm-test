@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Paper,
@@ -109,13 +109,7 @@ export default function CasesList() {
     );
   }
 
-  if (error) {
-    return (
-      <Box sx={{ mt: 4 }}>
-        <Typography color="error">{error}</Typography>
-      </Box>
-    );
-  }
+
 
   return (
     <Box sx={{ width: '100%' }}>

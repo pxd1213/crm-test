@@ -8,6 +8,7 @@ import {
   Button,
   Typography,
   Box,
+  Alert,
 } from '@mui/material';
 
 export default function Signup() {
@@ -23,6 +24,17 @@ export default function Signup() {
   async function handleSubmit(e) {
     e.preventDefault();
     
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return setError('Please enter a valid email address');
+    }
+
+    // Validate password
+    if (password.length < 6) {
+      return setError('Password must be at least 6 characters');
+    }
+    
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
@@ -33,9 +45,21 @@ export default function Signup() {
       await signup(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      console.error('Firebase signup error:', err);
+      if (err.code === 'auth/email-already-in-use') {
+        setError('Email is already registered');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password must be at least 6 characters');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Email/Password authentication is not enabled');
+      } else {
+        setError('Authentication error. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -52,7 +76,11 @@ export default function Signup() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             Sign Up
           </Typography>
-          {error && <Typography color="error" align="center">{error}</Typography>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <form onSubmit={handleSubmit}>
             <TextField
               margin="normal"
@@ -65,6 +93,8 @@ export default function Signup() {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              error={error && error.includes('email')}
+              helperText={error && error.includes('email') ? error : ''}
             />
             <TextField
               margin="normal"
@@ -77,6 +107,8 @@ export default function Signup() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              error={error && error.includes('password')}
+              helperText={error && error.includes('password') ? error : ''}
             />
             <TextField
               margin="normal"
@@ -86,10 +118,26 @@ export default function Signup() {
               label="Confirm Password"
               type="password"
               id="confirmPassword"
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              error={error && error.includes('Passwords')}
+              helperText={error && error.includes('Passwords') ? error : ''}
             />
             <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
+            >
+              {loading ? 'Signing up...' : 'Sign Up'}
+            </Button>
+          </form>
+        </Paper>
+      </Box>
+    </Container>
+  );
               type="submit"
               fullWidth
               variant="contained"

@@ -34,6 +34,9 @@ export default function Navbar() {
               <Button color="inherit" onClick={() => navigate('/cases')}>
                 Cases
               </Button>
+              <Button color="inherit" onClick={() => navigate('/energy-scan')}>
+                EnergyScan
+              </Button>
               <Button color="inherit" onClick={() => navigate('/')}>
                 Dashboard
               </Button>

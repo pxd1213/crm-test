@@ -18,11 +18,15 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.3",
     "react-scripts": "5.0.1",
-    "@mui/styles": "^5.15.7"
+    "@mui/styles": "^5.15.7",
+    "next": "^13.0.6"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "next dev -p 3001",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

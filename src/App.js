@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
 import CasesList from './components/CasesList';
 import CaseDetails from './components/CaseDetails';
+import EnergyScan from './components/EnergyScan';
 import { AuthProvider } from './contexts/AuthContext';
 
 const theme = createTheme({
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/cases" element={<CasesList />} />
             <Route path="/cases/:id" element={<CaseDetails />} />
+            <Route path="/energy-scan" element={<EnergyScan />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

@@ -12,7 +12,10 @@ import {
   Select,
   MenuItem,
   Chip,
+  Paper,
+  InputAdornment
 } from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { mockCases } from './mock/cases.js';
 
 const CasesList = () => {

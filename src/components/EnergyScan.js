@@ -13,6 +13,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  CircularProgress
 } from '@mui/material';
 import { Download as DownloadIcon, Upload as UploadIcon } from '@mui/icons-material';
 import { mockEnergyScanData } from './mock/energyScan.js';

@@ -5,8 +5,7 @@ import {
   get,
   query,
   orderByChild,
-  equalTo,
-  onValue
+  equalTo
 } from 'firebase/database';
 
 export const CASE_STATUS = {
@@ -128,6 +127,8 @@ export class CasesService {
         case CASE_STATUS.CLOSED:
           stats.closed++;
           break;
+        default:
+          console.warn(`Unknown case status: ${status}`);
       }
     });
 

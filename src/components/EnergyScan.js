@@ -5,9 +5,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CircularProgress,
-  Divider,
-  Grid,
   Typography,
   Table,
   TableBody,
@@ -16,8 +13,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  InputAdornment,
 } from '@mui/material';
 import { Download as DownloadIcon, Upload as UploadIcon } from '@mui/icons-material';
 import { mockEnergyScanData } from './mock/energyScan.js';
@@ -26,7 +21,7 @@ import * as XLSX from 'xlsx';
 const EnergyScan = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [parsedData, setParsedData] = useState(null);
+  const [parsedData] = useState(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (event) => {
@@ -34,25 +29,6 @@ const EnergyScan = () => {
     if (selectedFile) {
       setFile(selectedFile);
       setError('');
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!file) {
-      setError('Please select a file first');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      // Simulate API call with mock data
-      setParsedData(mockEnergyScanData);
-    } catch (err) {
-      setError('Failed to parse PDF');
-    } finally {
-      setLoading(false);
     }
   };
 

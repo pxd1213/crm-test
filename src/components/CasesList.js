@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import {
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -14,17 +12,11 @@ import {
   Select,
   MenuItem,
   Chip,
-  IconButton,
-  InputAdornment,
 } from '@mui/material';
-import {
-  OpenInNew as OpenInNewIcon,
-  Search as SearchIcon,
-} from '@mui/icons-material';
 import { mockCases } from './mock/cases.js';
 
 const CasesList = () => {
-  const [cases, setCases] = useState(mockCases);
+  const [cases] = useState(mockCases);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: '',

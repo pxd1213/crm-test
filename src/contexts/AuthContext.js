@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 
 const AuthContext = createContext();
 
@@ -11,7 +11,6 @@ export function AuthProvider({ children }) {
     email: 'mock@user.com',
     uid: 'mock-user-id'
   });
-  const [loading, setLoading] = useState(false);
 
   function signup(email, password) {
     return new Promise((resolve) => {
@@ -39,10 +38,6 @@ export function AuthProvider({ children }) {
       }, 1000);
     });
   }
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
 
   const value = {
     currentUser,

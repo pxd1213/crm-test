@@ -22,10 +22,6 @@ export const CASE_CHANNEL = {
 };
 
 export class CasesService {
-  constructor() {
-    // No initialization needed for mock service
-  }
-
   createCase(caseData) {
     return new Promise((resolve) => {
       setTimeout(() => {

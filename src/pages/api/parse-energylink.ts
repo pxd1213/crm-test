@@ -1,13 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pdfParse from 'pdf-parse';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { ParsedData } from '../../components/EnergyLinkUploader';
 import formidable from 'formidable';
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 export const config = {
   api: {
@@ -59,7 +58,7 @@ export default async function handler(
       ${pdfText.text}
     `;
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
       temperature: 0,

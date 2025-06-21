@@ -56,195 +56,152 @@ export default function CasesList() {
     });
 
     return () => unsubscribe();
-  }, [casesService]);
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'open':
-        return 'primary';
+        return 'error';
       case 'in_progress':
         return 'warning';
       case 'resolved':
         return 'success';
-      case 'closed':
-        return 'error';
       default:
         return 'default';
     }
   };
 
-  const handleCaseClick = (caseId) => {
-    navigate(`/cases/${caseId}`);
-  };
-
-  const handleSearch = useCallback((event) => {
-    setSearch(event.target.value);
-  }, []);
-
-  const handleChangePage = useCallback((event, newPage) => {
-    setPage(newPage);
-  }, []);
-
-  const handleChangeRowsPerPage = useCallback((event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  }, []);
-
-  const handleFilterChange = useCallback((field) => (event) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
-  }, []);
-
-  const filteredCases = cases.filter(caseData => {
-    const matchesSearch = caseData.subject.toLowerCase().includes(search.toLowerCase()) ||
-      caseData.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = !filters.status || caseData.status === filters.status;
-    const matchesPriority = !filters.priority || caseData.priority === filters.priority;
-    const matchesChannel = !filters.channel || caseData.channel === filters.channel;
-    return matchesSearch && matchesStatus && matchesPriority && matchesChannel;
-  });
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-
-
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search cases..."
-              value={search}
-              onChange={handleSearch}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.status}
-                onChange={handleFilterChange('status')}
-                label="Status"
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="open">Open</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="resolved">Resolved</MenuItem>
-                <MenuItem value="closed">Closed</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Priority</InputLabel>
-              <Select
-                value={filters.priority}
-                onChange={handleFilterChange('priority')}
-                label="Priority"
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="low">Low</MenuItem>
-                <MenuItem value="medium">Medium</MenuItem>
-                <MenuItem value="high">High</MenuItem>
-                <MenuItem value="urgent">Urgent</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Channel</InputLabel>
-              <Select
-                value={filters.channel}
-                onChange={handleFilterChange('channel')}
-                label="Channel"
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="email">Email</MenuItem>
-                <MenuItem value="phone">Phone</MenuItem>
-                <MenuItem value="chat">Chat</MenuItem>
-                <MenuItem value="ticket">Ticket</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-        </Toolbar>
-      </Paper>
-      
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Cases
+      </Typography>
+
+      {/* Search and Filters */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search cases..."
+          value={searchTerm}
+          onChange={handleSearch}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          select
+          label="Status"
+          value={filters.status}
+          onChange={handleFilterChange('status')}
+          sx={{ minWidth: 150 }}
+          SelectProps={{
+            native: true,
+          }}
+        >
+          <option value="">All</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+        </TextField>
+        <TextField
+          select
+          label="Priority"
+          value={filters.priority}
+          onChange={handleFilterChange('priority')}
+          sx={{ minWidth: 150 }}
+          SelectProps={{
+            native: true,
+          }}
+        >
+          <option value="">All</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </TextField>
+        <TextField
+          select
+          label="Channel"
+          value={filters.channel}
+          onChange={handleFilterChange('channel')}
+          sx={{ minWidth: 150 }}
+          SelectProps={{
+            native: true,
+          }}
+        >
+          <option value="">All</option>
+          <option value="email">Email</option>
+          <option value="phone">Phone</option>
+          <option value="chat">Chat</option>
+        </TextField>
+      </Box>
+
+      {/* Cases Table */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Subject</TableCell>
+              <TableCell>Title</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Priority</TableCell>
               <TableCell>Channel</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Created At</TableCell>
+              <TableCell>Assigned To</TableCell>
+              <TableCell>Last Updated</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCases
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((caseData) => (
+            {filteredCases.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <Typography variant="body1" align="center">
+                    No cases found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCases.map((caseItem) => (
                 <TableRow
-                  key={caseData.id}
+                  key={caseItem.id}
                   hover
                   sx={{ cursor: 'pointer' }}
-                  onClick={() => handleCaseClick(caseData.id)}
                 >
-                  <TableCell>{caseData.subject}</TableCell>
+                  <TableCell>{caseItem.title}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={caseData.status}
-                      color={getStatusColor(caseData.status)}
-                      size="small"
-                    />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          bgcolor: getStatusColor(caseItem.status),
+                        }}
+                      />
+                      {caseItem.status}
+                    </Box>
                   </TableCell>
-                  <TableCell>{caseData.priority}</TableCell>
-                  <TableCell>{caseData.channel}</TableCell>
-                  <TableCell>{new Date(caseData.createdAt).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton onClick={(e) => {
-                        e.stopPropagation();
-                        handleCaseClick(caseData.id);
-                      }}>
-                        <OpenInNewIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  <TableCell>{caseItem.priority}</TableCell>
+                  <TableCell>{caseItem.channel}</TableCell>
+                  <TableCell>{caseItem.createdAt}</TableCell>
+                  <TableCell>{caseItem.assignedTo}</TableCell>
+                  <TableCell>{caseItem.lastUpdated}</TableCell>
                 </TableRow>
-              ))}
+              ))
+            )}
           </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                colSpan={6}
-                count={filteredCases.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                SelectProps={{
-                  size: 'small',
-                }}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </TableRow>
-          </TableFooter>
         </Table>
       </TableContainer>
     </Box>
   );
-}
+};
+
+export default CasesList;

@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getDatabase, initializeDatabase } from 'firebase/database';
+import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -14,14 +14,11 @@ const firebaseConfig = {
 };
 
 const existingApp = getApps().find(app => app.name === '[DEFAULT]');
-const app = existingApp ? existingApp : initializeApp(firebaseConfig);
+const app = existingApp ? existingApp : initializeApp(firebaseConfig, {
+  databaseURL: `https://${firebaseConfig.projectId}-default-rtdb.firebaseio.com`
+});
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
-
-// Initialize Realtime Database
-initializeDatabase(app, {
-  databaseURL: `https://${firebaseConfig.projectId}-default-rtdb.firebaseio.com`
-});
 
 export { app, auth, db, storage };

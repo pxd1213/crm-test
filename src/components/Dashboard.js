@@ -9,15 +9,12 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
   Button,
   Avatar,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
-  Chip,
-  Divider,
   CircularProgress,
 } from '@mui/material';
 import Case from './Case';
@@ -95,7 +92,7 @@ export default function Dashboard() {
     };
 
     loadDashboardData();
-  }, []);
+  }, [casesService]);
 
   const [createCaseOpen, setCreateCaseOpen] = useState(false);
 

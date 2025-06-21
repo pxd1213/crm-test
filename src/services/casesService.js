@@ -9,8 +9,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
-  orderBy,
-  limit
+  orderBy
 } from 'firebase/firestore';
 
 export const CASE_STATUS = {

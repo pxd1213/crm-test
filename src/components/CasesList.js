@@ -32,7 +32,7 @@ import {
 export default function CasesList() {
   const navigate = useNavigate();
   const [cases, setCases] = useState([]);
-  const [loading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     status: '',
@@ -47,6 +47,12 @@ export default function CasesList() {
   useEffect(() => {
     const unsubscribe = casesService.subscribeToCases((updatedCases) => {
       setCases(updatedCases);
+    });
+
+    // Initial fetch
+    casesService.getCases().then(cases => {
+      setCases(cases);
+      setLoading(false);
     });
 
     return () => unsubscribe();

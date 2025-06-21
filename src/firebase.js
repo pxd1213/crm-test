@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getDatabase } from 'firebase/database';
+import { getDatabase, initializeDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -13,9 +13,15 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
+const existingApp = getApps().find(app => app.name === '[DEFAULT]');
+const app = existingApp ? existingApp : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
+
+// Initialize Realtime Database
+initializeDatabase(app, {
+  databaseURL: `https://${firebaseConfig.projectId}-default-rtdb.firebaseio.com`
+});
 
 export { app, auth, db, storage };

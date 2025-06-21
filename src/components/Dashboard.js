@@ -44,7 +44,6 @@ export default function Dashboard() {
   const [stats, setStats] = useState({});
   const [recentActivity, setRecentActivity] = useState([]);
   const [openCases, setOpenCases] = useState([]);
-  const casesService = new CasesService();
 
   const IconMap = {
     email: <EmailIcon color="secondary" />,
@@ -71,6 +70,7 @@ export default function Dashboard() {
   );
 
   useEffect(() => {
+    const casesService = new CasesService();
     const loadDashboardData = async () => {
       try {
         // Load case stats
@@ -92,7 +92,7 @@ export default function Dashboard() {
     };
 
     loadDashboardData();
-  }, [casesService]);
+  }, []);
 
   const [createCaseOpen, setCreateCaseOpen] = useState(false);
 

@@ -1,16 +1,13 @@
 import { db } from '../firebase';
 import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
+  ref,
+  set,
+  get,
   query,
-  where,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  orderBy
-} from 'firebase/firestore';
+  orderByChild,
+  equalTo,
+  onValue
+} from 'firebase/database';
 
 export const CASE_STATUS = {
   OPEN: 'open',
@@ -34,132 +31,126 @@ export const CASE_CHANNEL = {
 };
 
 export class CasesService {
+  casesRef;
+
   constructor() {
-    this.casesCollection = collection(db, 'cases');
+    this.casesRef = ref(db, 'cases');
   }
 
   async createCase(caseData) {
-    const caseRef = doc(this.casesCollection);
-    await setDoc(caseRef, {
+    const newCaseRef = ref(this.casesRef, Date.now());
+    await set(newCaseRef, {
       ...caseData,
-      id: caseRef.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       status: CASE_STATUS.OPEN,
+      id: newCaseRef.key
     });
-    return caseRef.id;
+    return newCaseRef.key;
   }
 
-  async getCase(caseId) {
-    const caseRef = doc(this.casesCollection, caseId);
-    const caseDoc = await getDoc(caseRef);
-    if (!caseDoc.exists()) {
+  async getCase(id) {
+    const caseRef = ref(this.casesRef, id);
+    const snapshot = await get(caseRef);
+    if (!snapshot.exists()) {
       throw new Error('Case not found');
     }
-    return { ...caseDoc.data(), id: caseDoc.id };
+    return {
+      id: snapshot.key,
+      ...snapshot.val()
+    };
   }
 
-  async updateCase(caseId, caseData) {
-    const caseRef = doc(this.casesCollection, caseId);
-    await updateDoc(caseRef, {
-      ...caseData,
-      updatedAt: new Date(),
-    });
-  }
+  async getCases(filters = {}) {
+    const caseRef = ref(this.casesRef);
+    let queryRef = caseRef;
 
-  async deleteCase(caseId) {
-    const caseRef = doc(this.casesCollection, caseId);
-    await deleteDoc(caseRef);
-  }
+    if (filters.status) {
+      queryRef = query(caseRef, orderByChild('status'), equalTo(filters.status));
+    }
 
-  async getCasesByStatus(status) {
-    const q = query(this.casesCollection, where('status', '==', status));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
+    if (filters.priority) {
+      queryRef = query(caseRef, orderByChild('priority'), equalTo(filters.priority));
+    }
+
+    if (filters.channel) {
+      queryRef = query(caseRef, orderByChild('channel'), equalTo(filters.channel));
+    }
+
+    queryRef = query(queryRef, orderByChild('createdAt'));
+
+    const snapshot = await get(queryRef);
+    return Object.entries(snapshot.val() || {}).map(([id, data]) => ({
+      id,
+      ...data
     }));
   }
 
-  async getOpenCases() {
-    return this.getCasesByStatus(CASE_STATUS.OPEN);
+  async updateCase(id, updates) {
+    const caseRef = ref(this.casesRef, id);
+    await set(caseRef, {
+      ...updates,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  async deleteCase(id) {
+    const caseRef = ref(this.casesRef, id);
+    await set(caseRef, null);
   }
 
   async getCaseStats() {
-    try {
-      const [totalCases, avgResponseTime, avgSatisfaction] = await Promise.all([
-        this.getTotalCases(),
-        this.getAverageResponseTime(),
-        this.getAverageSatisfaction(),
-      ]);
+    const caseRef = ref(this.casesRef);
+    const snapshot = await get(caseRef);
+    const stats = {
+      total: 0,
+      open: 0,
+      inProgress: 0,
+      resolved: 0,
+      closed: 0
+    };
 
-      return {
-        totalCases,
-        responseTime: avgResponseTime,
-        satisfactionScore: avgSatisfaction,
-        openCases: (await this.getOpenCases()).length,
-      };
-    } catch (error) {
-      console.error('Error fetching case stats:', error);
-      throw error;
-    }
-  }
+    const cases = snapshot.val() || {};
+    stats.total = Object.keys(cases).length;
 
-  async getTotalCases() {
-    const q = query(this.casesCollection);
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.size;
-  }
-
-  async getAverageResponseTime() {
-    const q = query(this.casesCollection);
-    const querySnapshot = await getDocs(q);
-    const cases = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    const totalResponseTime = cases.reduce((sum, caseData) => {
-      if (caseData.responseTime) {
-        return sum + caseData.responseTime;
+    Object.values(cases).forEach(caseData => {
+      const status = caseData.status;
+      switch (status) {
+        case CASE_STATUS.OPEN:
+          stats.open++;
+          break;
+        case CASE_STATUS.IN_PROGRESS:
+          stats.inProgress++;
+          break;
+        case CASE_STATUS.RESOLVED:
+          stats.resolved++;
+          break;
+        case CASE_STATUS.CLOSED:
+          stats.closed++;
+          break;
       }
-      return sum;
-    }, 0);
+    });
 
-    return cases.length > 0 ? totalResponseTime / cases.length : 0;
-  }
-
-  async getAverageSatisfaction() {
-    const q = query(this.casesCollection);
-    const querySnapshot = await getDocs(q);
-    const cases = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    const totalScore = cases.reduce((sum, caseData) => {
-      if (caseData.satisfactionScore) {
-        return sum + caseData.satisfactionScore;
-      }
-      return sum;
-    }, 0);
-
-    return cases.length > 0 ? totalScore / cases.length : 0;
+    return stats;
   }
 
   async getRecentActivity(limit = 5) {
-    try {
-      const activityQuery = query(
-        this.casesCollection,
-        orderBy('createdAt', 'desc'),
-        limit(limit)
-      );
-      
-      const activitySnapshot = await getDocs(activityQuery);
-      return activitySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })).map(activity => ({
+    const caseRef = ref(this.casesRef);
+    const queryRef = query(caseRef, orderByChild('createdAt'));
+    const snapshot = await get(queryRef);
+    const cases = snapshot.val() || {};
+
+    return Object.entries(cases)
+      .sort(([, a], [, b]) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit)
+      .map(([id, caseData]) => ({
+        id,
+        title: `Case ${caseData.subject}`,
+        description: `Status: ${caseData.status}`,
+        channel: caseData.channel,
+        time: new Date(caseData.createdAt).toLocaleString()
+      }))
+      .map(activity => ({
         type: activity.channel,
         icon: this.getChannelIcon(activity.channel),
         title: this.getActivityTitle(activity),

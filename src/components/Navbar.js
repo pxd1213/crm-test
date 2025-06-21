@@ -31,6 +31,9 @@ export default function Navbar() {
         <Box>
           {currentUser ? (
             <>
+              <Button color="inherit" onClick={() => navigate('/cases')}>
+                Cases
+              </Button>
               <Button color="inherit" onClick={() => navigate('/')}>
                 Dashboard
               </Button>

@@ -6,6 +6,8 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
+import CasesList from './components/CasesList';
+import CaseDetails from './components/CaseDetails';
 import { AuthProvider } from './contexts/AuthContext';
 
 const theme = createTheme({
@@ -30,6 +32,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Dashboard />} />
+            <Route path="/cases" element={<CasesList />} />
+            <Route path="/cases/:id" element={<CaseDetails />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

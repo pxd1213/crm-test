@@ -2,43 +2,36 @@ import { db } from '../firebase';
 import {
   collection,
   doc,
-  addDoc,
-  getDocs,
+  setDoc,
+  getDoc,
   query,
   where,
-  orderBy,
-  limit,
+  getDocs,
   updateDoc,
-  serverTimestamp,
+  deleteDoc,
+  orderBy,
+  limit
 } from 'firebase/firestore';
 
 export const CASE_STATUS = {
   OPEN: 'open',
   IN_PROGRESS: 'in_progress',
   RESOLVED: 'resolved',
-  CLOSED: 'closed',
+  CLOSED: 'closed'
 };
 
 export const CASE_PRIORITY = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
-  URGENT: 'urgent',
-};
-
-export const CASE_TYPE = {
-  BUG: 'bug',
-  FEATURE_REQUEST: 'feature_request',
-  TECHNICAL_SUPPORT: 'technical_support',
-  BILLING: 'billing',
-  GENERAL_INQUIRY: 'general_inquiry',
+  URGENT: 'urgent'
 };
 
 export const CASE_CHANNEL = {
   EMAIL: 'email',
   CHAT: 'chat',
   PHONE: 'phone',
-  TICKET: 'ticket',
+  TICKET: 'ticket'
 };
 
 export class CasesService {
@@ -47,124 +40,112 @@ export class CasesService {
   }
 
   async createCase(caseData) {
-    try {
-      const caseRef = await addDoc(this.casesCollection, {
-        ...caseData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        status: CASE_STATUS.OPEN,
-      });
-      return caseRef.id;
-    } catch (error) {
-      console.error('Error creating case:', error);
-      throw error;
-    }
+    const caseRef = doc(this.casesCollection);
+    await setDoc(caseRef, {
+      ...caseData,
+      id: caseRef.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: CASE_STATUS.OPEN,
+    });
+    return caseRef.id;
   }
 
-  async getCases(filters = {}) {
-    try {
-      let q = query(this.casesCollection);
-
-      // Apply filters
-      if (filters.status) {
-        q = query(q, where('status', '==', filters.status));
-      }
-      if (filters.priority) {
-        q = query(q, where('priority', '==', filters.priority));
-      }
-      if (filters.type) {
-        q = query(q, where('type', '==', filters.type));
-      }
-      if (filters.channel) {
-        q = query(q, where('channel', '==', filters.channel));
-      }
-      if (filters.assignedTo) {
-        q = query(q, where('assignedTo', '==', filters.assignedTo));
-      }
-
-      // Add sorting and pagination
-      q = query(q, orderBy('createdAt', 'desc'));
-      if (filters.limit) {
-        q = query(q, limit(filters.limit));
-      }
-
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    } catch (error) {
-      console.error('Error fetching cases:', error);
-      throw error;
+  async getCase(caseId) {
+    const caseRef = doc(this.casesCollection, caseId);
+    const caseDoc = await getDoc(caseRef);
+    if (!caseDoc.exists()) {
+      throw new Error('Case not found');
     }
+    return { ...caseDoc.data(), id: caseDoc.id };
   }
 
-  async updateCase(caseId, updates) {
-    try {
-      const caseRef = doc(this.casesCollection, caseId);
-      await updateDoc(caseRef, {
-        ...updates,
-        updatedAt: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error('Error updating case:', error);
-      throw error;
-    }
+  async updateCase(caseId, caseData) {
+    const caseRef = doc(this.casesCollection, caseId);
+    await updateDoc(caseRef, {
+      ...caseData,
+      updatedAt: new Date(),
+    });
+  }
+
+  async deleteCase(caseId) {
+    const caseRef = doc(this.casesCollection, caseId);
+    await deleteDoc(caseRef);
+  }
+
+  async getCasesByStatus(status) {
+    const q = query(this.casesCollection, where('status', '==', status));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  }
+
+  async getOpenCases() {
+    return this.getCasesByStatus(CASE_STATUS.OPEN);
   }
 
   async getCaseStats() {
     try {
-      const stats = {
-        totalCases: 0,
-        openCases: 0,
-        resolvedCases: 0,
-        responseTime: 0,
-        satisfactionScore: 0,
-        activeChats: 0,
-        unreadEmails: 0,
-        pendingCalls: 0,
+      const [totalCases, avgResponseTime, avgSatisfaction] = await Promise.all([
+        this.getTotalCases(),
+        this.getAverageResponseTime(),
+        this.getAverageSatisfaction(),
+      ]);
+
+      return {
+        totalCases,
+        responseTime: avgResponseTime,
+        satisfactionScore: avgSatisfaction,
+        openCases: (await this.getOpenCases()).length,
       };
-
-      // Get total cases
-      const totalCasesQuery = query(this.casesCollection);
-      const totalCasesSnapshot = await getDocs(totalCasesQuery);
-      stats.totalCases = totalCasesSnapshot.size;
-
-      // Get cases by status
-      const openCasesQuery = query(this.casesCollection, where('status', '==', CASE_STATUS.OPEN));
-      const openCasesSnapshot = await getDocs(openCasesQuery);
-      stats.openCases = openCasesSnapshot.size;
-
-      const resolvedCasesQuery = query(this.casesCollection, where('status', '==', CASE_STATUS.RESOLVED));
-      const resolvedCasesSnapshot = await getDocs(resolvedCasesQuery);
-      stats.resolvedCases = resolvedCasesSnapshot.size;
-
-      // Calculate average response time (simplified for now)
-      const recentCasesQuery = query(this.casesCollection, orderBy('createdAt', 'desc'), limit(10));
-      const recentCasesSnapshot = await getDocs(recentCasesQuery);
-      const recentCases = recentCasesSnapshot.docs.map(doc => doc.data());
-      
-      const responseTimes = recentCases
-        .filter(caseData => caseData.responseTime)
-        .map(caseData => caseData.responseTime);
-      
-      if (responseTimes.length > 0) {
-        stats.responseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
-      }
-
-      // Get active chats
-      const activeChatsQuery = query(this.casesCollection, 
-        where('channel', '==', CASE_CHANNEL.CHAT),
-        where('status', 'in', [CASE_STATUS.OPEN, CASE_STATUS.IN_PROGRESS])
-      );
-      const activeChatsSnapshot = await getDocs(activeChatsQuery);
-      stats.activeChats = activeChatsSnapshot.size;
-
-      return stats;
     } catch (error) {
       console.error('Error fetching case stats:', error);
       throw error;
     }
+  }
+
+  async getTotalCases() {
+    const q = query(this.casesCollection);
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size;
+  }
+
+  async getAverageResponseTime() {
+    const q = query(this.casesCollection);
+    const querySnapshot = await getDocs(q);
+    const cases = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const totalResponseTime = cases.reduce((sum, caseData) => {
+      if (caseData.responseTime) {
+        return sum + caseData.responseTime;
+      }
+      return sum;
+    }, 0);
+
+    return cases.length > 0 ? totalResponseTime / cases.length : 0;
+  }
+
+  async getAverageSatisfaction() {
+    const q = query(this.casesCollection);
+    const querySnapshot = await getDocs(q);
+    const cases = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const totalScore = cases.reduce((sum, caseData) => {
+      if (caseData.satisfactionScore) {
+        return sum + caseData.satisfactionScore;
+      }
+      return sum;
+    }, 0);
+
+    return cases.length > 0 ? totalScore / cases.length : 0;
   }
 
   async getRecentActivity(limit = 5) {

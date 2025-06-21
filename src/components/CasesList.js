@@ -9,7 +9,6 @@ import {
   TableHead,
   TableRow,
   Box,
-  Typography,
   Chip,
   IconButton,
   Tooltip,
@@ -33,7 +32,7 @@ import {
 export default function CasesList() {
   const navigate = useNavigate();
   const [cases, setCases] = useState([]);
-  const [loading, _setLoading] = useState(true);
+  const [loading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     status: '',

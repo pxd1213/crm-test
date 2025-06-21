@@ -169,23 +169,7 @@ export default function Dashboard() {
               Recent Activity
             </Typography>
             <List>
-              {recentActivity.map((activity, index) => (
-                <React.Fragment key={index}>
-                  <ListItem>
-                    <ListItemAvatar>
-                      {activity.icon}
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={activity.title}
-                      secondary={activity.description}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      {activity.time}
-                    </Typography>
-                  </ListItem>
-                  {index < recentActivity.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
+              {recentActivity.map(renderActivityItem)}
             </List>
           </Paper>
 

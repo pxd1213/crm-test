@@ -195,13 +195,13 @@ export class CasesService {
   getChannelIcon(channel) {
     switch (channel) {
       case CASE_CHANNEL.CHAT:
-        return <ChatIcon color="primary" />;
+        return 'Chat';
       case CASE_CHANNEL.EMAIL:
-        return <EmailIcon color="secondary" />;
+        return 'Email';
       case CASE_CHANNEL.PHONE:
-        return <PhoneIcon color="success" />;
+        return 'Phone';
       default:
-        return <SupportAgentIcon color="primary" />;
+        return 'SupportAgent';
     }
   }
 

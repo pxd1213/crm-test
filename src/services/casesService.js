@@ -1,12 +1,4 @@
-import { db } from '../firebase';
-import {
-  ref,
-  set,
-  get,
-  query,
-  orderByChild,
-  equalTo
-} from 'firebase/database';
+import { mockCases } from '../components/mock/cases.js';
 
 export const CASE_STATUS = {
   OPEN: 'open',
@@ -24,174 +16,176 @@ export const CASE_PRIORITY = {
 
 export const CASE_CHANNEL = {
   EMAIL: 'email',
-  CHAT: 'chat',
   PHONE: 'phone',
+  CHAT: 'chat',
   TICKET: 'ticket'
 };
 
 export class CasesService {
-  casesRef;
-
   constructor() {
-    this.casesRef = ref(db, 'cases');
+    // No initialization needed for mock service
   }
 
-  async createCase(caseData) {
-    const newCaseRef = ref(this.casesRef, Date.now());
-    await set(newCaseRef, {
-      ...caseData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: CASE_STATUS.OPEN,
-      id: newCaseRef.key
-    });
-    return newCaseRef.key;
-  }
-
-  async getCase(id) {
-    const caseRef = ref(this.casesRef, id);
-    const snapshot = await get(caseRef);
-    if (!snapshot.exists()) {
-      throw new Error('Case not found');
-    }
-    return {
-      id: snapshot.key,
-      ...snapshot.val()
-    };
-  }
-
-  async getCases(filters = {}) {
-    const caseRef = ref(this.casesRef);
-    let queryRef = caseRef;
-
-    if (filters.status) {
-      queryRef = query(caseRef, orderByChild('status'), equalTo(filters.status));
-    }
-
-    if (filters.priority) {
-      queryRef = query(caseRef, orderByChild('priority'), equalTo(filters.priority));
-    }
-
-    if (filters.channel) {
-      queryRef = query(caseRef, orderByChild('channel'), equalTo(filters.channel));
-    }
-
-    queryRef = query(queryRef, orderByChild('createdAt'));
-
-    const snapshot = await get(queryRef);
-    return Object.entries(snapshot.val() || {}).map(([id, data]) => ({
-      id,
-      ...data
-    }));
-  }
-
-  async updateCase(id, updates) {
-    const caseRef = ref(this.casesRef, id);
-    await set(caseRef, {
-      ...updates,
-      updatedAt: new Date().toISOString()
+  createCase(caseData) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newCase = {
+          id: Date.now().toString(),
+          ...caseData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        resolve(newCase);
+      }, 1000);
     });
   }
 
-  async deleteCase(id) {
-    const caseRef = ref(this.casesRef, id);
-    await set(caseRef, null);
-  }
-
-  async getCaseStats() {
-    const caseRef = ref(this.casesRef);
-    const snapshot = await get(caseRef);
-    const stats = {
-      total: 0,
-      open: 0,
-      inProgress: 0,
-      resolved: 0,
-      closed: 0
-    };
-
-    const cases = snapshot.val() || {};
-    stats.total = Object.keys(cases).length;
-
-    Object.values(cases).forEach(caseData => {
-      const status = caseData.status;
-      switch (status) {
-        case CASE_STATUS.OPEN:
-          stats.open++;
-          break;
-        case CASE_STATUS.IN_PROGRESS:
-          stats.inProgress++;
-          break;
-        case CASE_STATUS.RESOLVED:
-          stats.resolved++;
-          break;
-        case CASE_STATUS.CLOSED:
-          stats.closed++;
-          break;
-        default:
-          console.warn(`Unknown case status: ${status}`);
-      }
+  getCase(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const caseItem = mockCases.find(c => c.id === id);
+        resolve(caseItem || null);
+      }, 500);
     });
-
-    return stats;
   }
 
-  async getRecentActivity(limit = 5) {
-    const caseRef = ref(this.casesRef);
-    const queryRef = query(caseRef, orderByChild('createdAt'));
-    const snapshot = await get(queryRef);
-    const cases = snapshot.val() || {};
+  getCases(filters = {}) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let filteredCases = [...mockCases];
+        
+        if (filters.status) {
+          filteredCases = filteredCases.filter(c => c.status === filters.status);
+        }
+        if (filters.priority) {
+          filteredCases = filteredCases.filter(c => c.priority === filters.priority);
+        }
+        if (filters.channel) {
+          filteredCases = filteredCases.filter(c => c.channel === filters.channel);
+        }
 
-    return Object.entries(cases)
-      .sort(([, a], [, b]) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, limit)
-      .map(([id, caseData]) => ({
-        id,
-        title: `Case ${caseData.subject}`,
-        description: `Status: ${caseData.status}`,
-        channel: caseData.channel,
-        time: new Date(caseData.createdAt).toLocaleString()
-      }));
+        resolve(filteredCases);
+      }, 500);
+    });
+  }
+
+  updateCase(id, updates) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const caseIndex = mockCases.findIndex(c => c.id === id);
+        if (caseIndex !== -1) {
+          mockCases[caseIndex] = {
+            ...mockCases[caseIndex],
+            ...updates,
+            updatedAt: new Date().toISOString()
+          };
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      }, 500);
+    });
+  }
+
+  deleteCase(id) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const caseIndex = mockCases.findIndex(c => c.id === id);
+        if (caseIndex !== -1) {
+          mockCases.splice(caseIndex, 1);
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      }, 500);
+    });
+  }
+
+  getCaseStats() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const stats = {
+          total: mockCases.length,
+          byStatus: {
+            open: mockCases.filter(c => c.status === CASE_STATUS.OPEN).length,
+            in_progress: mockCases.filter(c => c.status === CASE_STATUS.IN_PROGRESS).length,
+            resolved: mockCases.filter(c => c.status === CASE_STATUS.RESOLVED).length,
+            closed: mockCases.filter(c => c.status === CASE_STATUS.CLOSED).length
+          },
+          byPriority: {
+            low: mockCases.filter(c => c.priority === CASE_PRIORITY.LOW).length,
+            medium: mockCases.filter(c => c.priority === CASE_PRIORITY.MEDIUM).length,
+            high: mockCases.filter(c => c.priority === CASE_PRIORITY.HIGH).length,
+            urgent: mockCases.filter(c => c.priority === CASE_PRIORITY.URGENT).length
+          },
+          byChannel: {
+            email: mockCases.filter(c => c.channel === CASE_CHANNEL.EMAIL).length,
+            phone: mockCases.filter(c => c.channel === CASE_CHANNEL.PHONE).length,
+            chat: mockCases.filter(c => c.channel === CASE_CHANNEL.CHAT).length,
+            ticket: mockCases.filter(c => c.channel === CASE_CHANNEL.TICKET).length
+          }
+        };
+        resolve(stats);
+      }, 500);
+    });
+  }
+
+  getRecentActivity(limit = 5) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const recent = mockCases
+          .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+          .slice(0, limit)
+          .map(caseItem => ({
+            id: caseItem.id,
+            title: caseItem.title,
+            status: caseItem.status,
+            channel: caseItem.channel,
+            updatedAt: caseItem.updatedAt,
+            assignedTo: caseItem.assignedTo
+          }));
+        resolve(recent);
+      }, 500);
+    });
   }
 
   getChannelIcon(channel) {
     switch (channel) {
-      case CASE_CHANNEL.CHAT:
-        return 'Chat';
       case CASE_CHANNEL.EMAIL:
-        return 'Email';
+        return 'mail';
       case CASE_CHANNEL.PHONE:
-        return 'Phone';
+        return 'phone';
+      case CASE_CHANNEL.CHAT:
+        return 'chat_bubble';
+      case CASE_CHANNEL.TICKET:
+        return 'description';
       default:
-        return 'SupportAgent';
+        return 'help';
     }
   }
 
   getActivityTitle(activity) {
-    switch (activity.channel) {
-      case CASE_CHANNEL.CHAT:
-        return 'New Chat Conversation';
-      case CASE_CHANNEL.EMAIL:
-        return 'New Email Received';
-      case CASE_CHANNEL.PHONE:
-        return 'Incoming Support Call';
-      default:
-        return 'New Support Case';
-    }
+    return activity.title || 'Untitled';
   }
 
   getTimeAgo(timestamp) {
     const now = new Date();
-    const diff = now - timestamp.toDate();
-    const minutes = Math.floor(diff / 60000);
-    
-    if (minutes < 60) {
-      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-    }
+    const diff = now - new Date(timestamp);
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) {
-      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-    }
     const days = Math.floor(hours / 24);
-    return `${days} day${days === 1 ? '' : 's'} ago`;
+
+    if (days > 0) {
+      return `${days}d ago`;
+    } else if (hours > 0) {
+      return `${hours}h ago`;
+    } else if (minutes > 0) {
+      return `${minutes}m ago`;
+    } else {
+      return `${seconds}s ago`;
+    }
   }
 }
+
+export default CasesService;

@@ -31,6 +31,16 @@ import {
   Timer as TimerIcon,
 } from '@mui/icons-material';
 
+const loadDashboardData = async () => {
+  const casesService = new CasesService();
+  const [stats, recentActivity, openCases] = await Promise.all([
+    casesService.getCaseStats(),
+    casesService.getRecentActivity(),
+    casesService.getOpenCases(),
+  ]);
+  return { stats, recentActivity, openCases };
+};
+
 export default function Dashboard() {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);

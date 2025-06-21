@@ -22,6 +22,7 @@ import {
   CASE_PRIORITY,
   CASE_CHANNEL,
 } from '../services/casesService';
+import { CasesService } from '../services/casesService';
 
 export default function CreateCase({ open, onClose, onCreate }) {
   const [formData, setFormData] = useState({

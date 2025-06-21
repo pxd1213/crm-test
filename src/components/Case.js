@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { CASE_STATUS, CASE_PRIORITY, CASE_CHANNEL } from '../services/casesService';
 import EditCase from './EditCase';
+import { CasesService } from '../services/casesService';
 
 export default function Case({ caseData, onEdit, onDelete }) {
   const [editOpen, setEditOpen] = useState(false);

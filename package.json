@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "pdf-parse": "^1.1.1",
+    "openai": "^4.0.0",
+    "xlsx": "^0.18.5",
+    "@types/pdf-parse": "^1.1.1",
+    "@types/xlsx": "^0.0.49",
+    "formidable": "^2.1.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.7",

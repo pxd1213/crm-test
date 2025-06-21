@@ -49,6 +49,30 @@ export default function Dashboard() {
   const [openCases, setOpenCases] = useState([]);
   const casesService = new CasesService();
 
+  const IconMap = {
+    email: <EmailIcon color="secondary" />,
+    chat: <ChatIcon color="primary" />,
+    phone: <PhoneIcon color="success" />,
+    ticket: <SupportAgentIcon color="primary" />
+  };
+
+  const renderActivityItem = (activity) => (
+    <ListItem key={activity.title}>
+      <ListItemAvatar>
+        <Avatar>
+          {IconMap[activity.channel]}
+        </Avatar>
+      </ListItemAvatar>
+      <ListItemText
+        primary={activity.title}
+        secondary={activity.description}
+      />
+      <Typography variant="body2" color="text.secondary">
+        {activity.time}
+      </Typography>
+    </ListItem>
+  );
+
   useEffect(() => {
     const loadDashboardData = async () => {
       try {

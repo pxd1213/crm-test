@@ -14,13 +14,11 @@ import {
   Paper,
   Button,
   Chip,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  Divider,
 } from '@mui/material';
 import { Download as DownloadIcon, Add as AddIcon } from '@mui/icons-material';
 import { mockCaseDetails } from './mock/caseDetails.js';

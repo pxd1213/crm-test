@@ -28,14 +28,12 @@ import { CasesService } from '../services/casesService';
 import {
   OpenInNew as OpenInNewIcon,
   Search as SearchIcon,
-  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 
 export default function CasesList() {
   const navigate = useNavigate();
   const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, _setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     status: '',
@@ -45,7 +43,7 @@ export default function CasesList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const casesService = new CasesService();
+  const casesService = useMemo(() => new CasesService(), []);
 
   useEffect(() => {
     const unsubscribe = casesService.subscribeToCases((updatedCases) => {

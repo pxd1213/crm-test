@@ -8,54 +8,50 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Paper,
+  Typography,
   Box,
-  Chip,
-  IconButton,
-  Tooltip,
-  CircularProgress,
-  TablePagination,
-  TableFooter,
-  Toolbar,
-  InputAdornment,
   TextField,
-  FormControl,
-  InputLabel,
   Select,
   MenuItem,
+  Chip,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
-import { CasesService } from '../services/casesService';
 import {
   OpenInNew as OpenInNewIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
+import { mockCases } from './mock/cases.js';
 
-export default function CasesList() {
-  const navigate = useNavigate();
-  const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+const CasesList = () => {
+  const [cases, setCases] = useState(mockCases);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: '',
     priority: '',
-    channel: ''
+    channel: '',
   });
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const casesService = useMemo(() => new CasesService(), []);
+  const filteredCases = cases.filter((caseItem) => {
+    const matchesSearch = caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caseItem.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = !filters.status || caseItem.status === filters.status;
+    const matchesPriority = !filters.priority || caseItem.priority === filters.priority;
+    const matchesChannel = !filters.channel || caseItem.channel === filters.channel;
+    return matchesSearch && matchesStatus && matchesPriority && matchesChannel;
+  });
 
-  useEffect(() => {
-    const unsubscribe = casesService.subscribeToCases((updatedCases) => {
-      setCases(updatedCases);
-    });
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
-    // Initial fetch
-    casesService.getCases().then(cases => {
-      setCases(cases);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+  const handleFilterChange = (field) => (e) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }));
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -76,7 +72,6 @@ export default function CasesList() {
         Cases
       </Typography>
 
-      {/* Search and Filters */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <TextField
           fullWidth
@@ -92,54 +87,38 @@ export default function CasesList() {
             ),
           }}
         />
-        <TextField
-          select
-          label="Status"
+        <Select
           value={filters.status}
           onChange={handleFilterChange('status')}
           sx={{ minWidth: 150 }}
-          SelectProps={{
-            native: true,
-          }}
         >
-          <option value="">All</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-        </TextField>
-        <TextField
-          select
-          label="Priority"
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="open">Open</MenuItem>
+          <MenuItem value="in_progress">In Progress</MenuItem>
+          <MenuItem value="resolved">Resolved</MenuItem>
+        </Select>
+        <Select
           value={filters.priority}
           onChange={handleFilterChange('priority')}
           sx={{ minWidth: 150 }}
-          SelectProps={{
-            native: true,
-          }}
         >
-          <option value="">All</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </TextField>
-        <TextField
-          select
-          label="Channel"
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="high">High</MenuItem>
+          <MenuItem value="medium">Medium</MenuItem>
+          <MenuItem value="low">Low</MenuItem>
+        </Select>
+        <Select
           value={filters.channel}
           onChange={handleFilterChange('channel')}
           sx={{ minWidth: 150 }}
-          SelectProps={{
-            native: true,
-          }}
         >
-          <option value="">All</option>
-          <option value="email">Email</option>
-          <option value="phone">Phone</option>
-          <option value="chat">Chat</option>
-        </TextField>
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="email">Email</MenuItem>
+          <MenuItem value="phone">Phone</MenuItem>
+          <MenuItem value="chat">Chat</MenuItem>
+        </Select>
       </Box>
 
-      {/* Cases Table */}
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -171,23 +150,11 @@ export default function CasesList() {
                 >
                   <TableCell>{caseItem.title}</TableCell>
                   <TableCell>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: '50%',
-                          bgcolor: getStatusColor(caseItem.status),
-                        }}
-                      />
-                      {caseItem.status}
-                    </Box>
+                    <Chip
+                      label={caseItem.status}
+                      color={getStatusColor(caseItem.status)}
+                      size="small"
+                    />
                   </TableCell>
                   <TableCell>{caseItem.priority}</TableCell>
                   <TableCell>{caseItem.channel}</TableCell>

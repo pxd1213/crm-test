@@ -3,10 +3,18 @@ import pdfParse from 'pdf-parse';
 import OpenAI from 'openai';
 import { ParsedData } from '../../components/EnergyLinkUploader';
 import formidable from 'formidable';
+import { IncomingMessage, ServerResponse } from 'http';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+interface File {
+  name: string;
+  size: number;
+  type: string;
+  buffer: Buffer;
+}
 
 export const config = {
   api: {
@@ -14,15 +22,22 @@ export const config = {
   },
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: IncomingMessage,
+  res: ServerResponse
+) {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.writeHead(405, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Method not allowed' }));
     return;
   }
 
   try {
-    const form = new formidable.IncomingForm();
-    const [file] = await new Promise<File[]>((resolve, reject) => {
+    const form = formidable({
+      multiples: false,
+    });
+
+    const [file] = await new Promise<any[]>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) reject(err);
         resolve(Object.values(files));
@@ -30,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Parse PDF
-    const pdfBuffer = Buffer.from(file as any);
+    const pdfBuffer = Buffer.from(file[0].buffer);
     const pdfText = await pdfParse(pdfBuffer);
 
     // Use OpenAI to parse the text into structured data

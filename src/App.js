@@ -7,7 +7,7 @@ import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
 import CasesList from './components/CasesList';
-import CaseDetails from './components/CaseDetails';
+import CaseDetail from './components/CaseDetail';
 import EnergyScan from './components/EnergyScan';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -34,7 +34,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/cases" element={<CasesList />} />
-            <Route path="/cases/:id" element={<CaseDetails />} />
+            <Route path="/cases/:id" element={<CaseDetail />} />
             <Route path="/energy-scan" element={<EnergyScan />} />
           </Routes>
         </BrowserRouter>

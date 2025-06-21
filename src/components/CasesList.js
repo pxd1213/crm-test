@@ -13,12 +13,15 @@ import {
   MenuItem,
   Chip,
   Paper,
-  InputAdornment
+  InputAdornment,
+  Link
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { mockCases } from './mock/cases.js';
+import { useNavigate } from 'react-router-dom';
 
 const CasesList = () => {
+  const navigate = useNavigate();
   const [cases] = useState(mockCases);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
@@ -142,7 +145,22 @@ const CasesList = () => {
                   hover
                   sx={{ cursor: 'pointer' }}
                 >
-                  <TableCell>{caseItem.title}</TableCell>
+                  <TableCell>
+                    <Link
+                      component="button"
+                      onClick={() => navigate(`/cases/${caseItem.id}`)}
+                      sx={{
+                        color: 'inherit',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          color: 'primary.main',
+                          textDecoration: 'underline',
+                        },
+                      }}
+                    >
+                      {caseItem.title}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={caseItem.status}

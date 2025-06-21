@@ -21,7 +21,6 @@ import * as XLSX from 'xlsx';
 
 const EnergyScan = () => {
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [parsedData] = useState(null);
   const [error, setError] = useState('');
 

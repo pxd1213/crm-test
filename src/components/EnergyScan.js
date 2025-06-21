@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { Download as DownloadIcon, Upload as UploadIcon } from '@mui/icons-material';
 import { mockEnergyScanData } from './mock/energyScan.js';
+import * as XLSX from 'xlsx';
 
 const EnergyScan = () => {
   const [file, setFile] = useState(null);
